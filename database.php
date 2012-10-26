@@ -34,7 +34,7 @@
 		 */
 		public function getMemberByTopic($topics = array()) {
 			if(empty($topics)) {
-				// RANDOM MEMBER
+				// Member least recently sent a question
 				$members = $this->query('SELECT DISTINCT(handle) FROM members WHERE id NOT IN (SELECT member FROM questions)'));
 			} else {
 				$members = $this->query('SELECT DISTINCT(members.handle), COUNT(topics.member) FROM members JOIN topics ON (topics.member = members.id AND (topics.topic = "'.implode('" OR topics.topic = "', $topics).'")) WHERE members.id NOT IN (SELECT member FROM questions)');
@@ -48,34 +48,30 @@
 		 * Save a question to the database to ensure members don't get overloaded
 		 * and that the reply can be sent
 		 *
-		 * @param integer $id       - Twitter ID of the tweet we sent to member
-		 * @param string  $asker    - Handle of the asker
-		 * @param string  $member   - Handle of the member question is assigned to
+		 * @param integer $tweet_id - Twitter ID of the mention
 		 * @param string  $question - Content of the tweeted question
 		 *
 		 * @return boolean of success
 		 */
-		public function saveQuestion($id, $asker, $member, $question) {
-			return $this->query('INSERT INTO questions (id, asker, member, content) SELECT '.$id.', "'.$asker.'", '.members.id.', "'.$question.'" FROM members WHERE members.handle = "'.$member.'"');
+		public function saveQuestion($tweet_id, $question) {
+			return $this->query('INSERT INTO questions (tweet_id, content) VALUES ("'.$tweet_id.'", "'.$question.'")');
+		}
+		
+		/**
+		 * Return the id of the most recent question
+		 *
+		 * return string of id
+		 */
+		public function getSinceId() {
+			$tq = $this->query('SELECT MAX(tweet_id) FROM questions');
+			$tweet = mysql_fetch_row($tq);
+			return $tweet['tweet_id'];
 		}
 		
 		/**
 		 * Remove a question from the database
 		 */
 		public function removeQuestion() {
-		}
-		
-		/**
-		 * Get the handle that a reply needs to be sent to
-		 *
-		 * @param integer $id - Unique Twitter ID of the tweet this is a reply to
-		 * 
-		 * @return string asker Twitter handle
-		 */
-		public function answerTarget($id) {
-			$askers = $this->query('SELECT asker FROM questions WHERE id = '.$id);
-			$asker = mysql_fetch_array($askers);
-			return $asker['asker'];
 		}
 		
 		/**
