@@ -4,8 +4,8 @@ function my_streaming_callback($data, $length, $metrics){
 return file_exists(dirname(__FILE__) . '/STOP');
 }
 
-require '/library/tmhOAuth/tmhOAuth.php';
-require '/library/tmhOAuth/tmhUtilities.php';
+require("/library/tmhOAuth/tmhOAuth.php");
+require("/library/tmhOAuth/tmhUtilities.php");
 $tmhOAuth = new tmhOAuth();
 
 $method = "https://api.twitter.com/1.1/statuses/mentions_timeline.json";
