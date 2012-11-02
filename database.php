@@ -5,7 +5,7 @@
 		/**
 		 * Constructor - connects to the database
 		 */
-		Database($host, $username, $password, $db) {
+		public function __construct($host, $username, $password, $db) {
 			$connect = mysql_connect($host, $username, $password);
 			mysql_select_db($db);
 		}
@@ -35,7 +35,7 @@
 		public function getMemberByTopic($topics = array()) {
 			if(empty($topics)) {
 				// Member least recently sent a question
-				$members = $this->query('SELECT DISTINCT(handle) FROM members WHERE id NOT IN (SELECT member FROM questions)'));
+				$members = $this->query('SELECT DISTINCT(handle) FROM members WHERE id NOT IN (SELECT member FROM questions)');
 			} else {
 				$members = $this->query('SELECT DISTINCT(members.handle), COUNT(topics.member) FROM members JOIN topics ON (topics.member = members.id AND (topics.topic = "'.implode('" OR topics.topic = "', $topics).'")) WHERE members.id NOT IN (SELECT member FROM questions)');
 			}

@@ -15,10 +15,29 @@
 			// App registered through @askcrh
 			$consumer_key    = 'v2uncgaHPPWupobjcemw';
 			$consumer_secret = 'Gu9fhLCeKKJdxHRBzZnfrYu1mD8FJF2aibacqybuA8';
-			$access_token    = '817731343-CrSPHS0vBMCZ13oHIyImEu5fIwbiypuW85UIow1Y';
-			$access_secret   = 'QCPI1xNChDE9jHmWREOgBoBvaykkrWvdiwyZe4pHw';
+			$access_token    = '817731343-1xrD8maWqbnrsT3s0t27uQEpeko7lE3uAyG7B0kI';
+			$access_secret   = 'eBT5PxIxWOI5RhW0eAtgPWaNeqTlHYHfgCatxGyfc';	
 			// Create connection
 			$this->connection = new TwitterOAuth($consumer_key,$consumer_secret,$access_token,$access_secret);
+		}
+		
+		/**
+		 *
+		 */
+		public function query($service = '', $params = array(), $type = 'get', $format = 'json') {
+			if($service == '') return 'Error: no url specified';
+			$type = strtolower($type);
+			if($type == 'get') {
+				return $this->connection->get(
+					$this->connection->host . $service . '.' . $format,
+					$params
+				);
+			} elseif($type == 'post') {
+				return $this->connection->post(
+					$this->connection->host . $service . '.' . $format,
+					$params
+				);
+			}
 		}
 		
 		/**
@@ -28,15 +47,11 @@
 		 */
 		public function getMentions() {
 			// Get all replies since our last question
-			// TODO: Get id of last question from DB
-			$last_id = '261242929593589760'; // Has to be a string
-			$mentions = $this->connection->get(
-				$this->connection->host . 'statuses/mentions.json',
-				array(
-					'since_id'  => $last_id,
-					'trim_user' => true
-				)
-			);
+			// TODO: PULL LAST ID FROM DATABASE
+			$lq = mysql_query('SELECT MAX(tweet_id) FROM questions');
+			$latest = mysql_fetch_array($lq);
+			$latest['tweet_id'] = "261242929593589760";
+			$mentions = $this->query('statuses/mentions',array('since_id'=>$latest['tweet_id'],'include_entities'=>true));
 			return $mentions;
 		}
 		
@@ -46,19 +61,15 @@
 		 * @param string $question_id - unique ID of the tweet we're replying to
 		 * @param string $answer      - String we're sending along as the answer
 		 *
-		 * @return boolean of success
+		 * @return array of reply data
 		 */
-		public function sendAnswer($id = '', $answer = '') {
-			if($id == '' || $answer == '') return false;
-			echo '&rarr; ', $answer, '<hr>';
-			$reply = $this->connection->post(
-				$this->connection->host . 'statuses/update.json',
+		public function sendAnswer($id = '', $handle = '', $answer = '') {
+			if($id == '' || $handle == '' || $answer == '') return false;
+			return $this->query('statuses/update',
 				array(
-					'status' => $answer,
+					'status' => '@' . $handle . ' ' . $answer,
 					'in_reply_to_status_id' => $id
-				)
-			);
-			return $reply; // TODO: Make boolean
+				), 'POST');
 		}
 	}
 ?>
