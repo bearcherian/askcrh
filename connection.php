@@ -41,35 +41,39 @@
 		}
 		
 		/**
-		 * Get mentions since the last mention
+		 * Get all replies since our last question
 		 *
 		 * @return array of twitter objects
 		 */
 		public function getMentions() {
-			// Get all replies since our last question
-			// TODO: PULL LAST ID FROM DATABASE
-			$lq = mysql_query('SELECT MAX(tweet_id) FROM questions');
+			// Pull last id from database
+			$lq = mysql_query('SELECT MAX(id) as max FROM (SELECT MAX(tweet_id) AS id FROM questions UNION SELECT MAX(tweet_id) AS id FROM answers) AS temp');
 			$latest = mysql_fetch_array($lq);
-			$latest['tweet_id'] = "261242929593589760";
-			$mentions = $this->query('statuses/mentions',array('since_id'=>$latest['tweet_id'],'include_entities'=>true));
+			echo 'Last tweet: ', $latest['max'], '<br><br>';
+			// Get all mentions since last id
+			$mentions = $this->query('statuses/mentions',array('since_id'=>$latest['max'],'include_entities'=>true));
 			return $mentions;
 		}
 		
 		/**
 		 * Send an echo reply back at the tweet's id
 		 *
-		 * @param string $question_id - unique ID of the tweet we're replying to
-		 * @param string $answer      - String we're sending along as the answer
+		 * @param string $message - String we're sending along as the message
+		 * @param string $reply   - Data for reply : 'handle' and 'id';
 		 *
 		 * @return array of reply data
 		 */
-		public function sendAnswer($id = '', $handle = '', $answer = '') {
-			if($id == '' || $handle == '' || $answer == '') return false;
-			return $this->query('statuses/update',
-				array(
-					'status' => '@' . $handle . ' ' . $answer,
-					'in_reply_to_status_id' => $id
-				), 'POST');
+		public function sendTweet($message = '', $reply = array()) {
+			if($message == '') return false;
+			if(empty($reply)) {
+				$params = array('status' => $message);
+			} else {
+				$params = array(
+					'status' => '@' . $reply['handle'] . ' ' . $message,
+					'in_reply_to_status_id' => $reply['id']
+				);
+			}
+			return $this->query('statuses/update', $params, 'POST');
 		}
 	}
 ?>
