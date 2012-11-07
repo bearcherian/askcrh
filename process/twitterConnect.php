@@ -1,6 +1,6 @@
 <?php
 	// Abraham William's OAuth Library
-	require 'library/abraham_twitter.php';
+	require '../library/abraham_twitter.php';
 
 	class Twitter {
 		/**

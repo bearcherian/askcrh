@@ -1,6 +1,6 @@
 <?php
-	require 'database.php';
-	require 'connection.php';
+	require '../data/dbconnection.php';
+	require 'twitterConnect.php';
 	// New connection
 	$twitter = new Twitter();
 	$database = new Database('localhost', 'gr8bear_askcrh', 'csc8542', 'gr8bear_askcrh');
