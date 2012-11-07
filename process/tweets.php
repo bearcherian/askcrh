@@ -1,5 +1,5 @@
 <?php
-	require '../data/dbconnection.php';
+	require '/home/gr8bear/askcrh/data/dbconnection.php';
 	require 'twitterConnect.php';
 	// New connection
 	$twitter = new Twitter();
