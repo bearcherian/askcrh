@@ -23,7 +23,7 @@
 			$member = $database->getMemberByTopic();
 			echo '&rarr; ', $member['handle'], ' (', $member['id'], ')<br>';
 			// Send tweet
-			$reply = $twitter->sendTweet('@crhallberg' /*. $member['handle']*/ . ' ' . $tweet_text . ' ' . time());
+			$reply = $twitter->sendTweet('@crhallberg (' . $member['handle'] . ') ' . $tweet_text);
 			// Save assignment to database
 			if(isset($reply->id_str)) {
 				$database->saveAssignment($mention->id_str, $member['id'], $reply->id_str);
