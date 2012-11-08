@@ -63,7 +63,7 @@
 		 *
 		 * @return array of reply data
 		 */
-		public function sendTweet($message = '', $reply = array()) {
+		public function send($message = '', $reply = array()) {
 			if($message == '') return false;
 			if(empty($reply)) {
 				$params = array('status' => $message);
@@ -73,6 +73,7 @@
 					'in_reply_to_status_id' => $reply['id']
 				);
 			}
+			echo '&rarr; ', $params['status'], '<br><br>';
 			return $this->query('statuses/update', $params, 'POST');
 		}
 	}

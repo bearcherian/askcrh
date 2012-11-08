@@ -20,6 +20,7 @@
 		 * @return MYSQL_Array
 		 */
 		private function query($query) {
+			//echo $query, '<br>';
 			$query = mysql_query($query) or die($query.'<br>'.mysql_error());
 			return $query;
 		}
@@ -36,12 +37,14 @@
 		public function getMemberByTopic($topics = array()) {
 			$aq = array();
 			if(true || empty($topics)) {
-				// Member least recently sent a question
+				// Any n00bs?
 				$aq = $this->query('SELECT handle,MIN(id) AS id FROM members WHERE id NOT IN (SELECT member AS id FROM assignments)');
 				$test = mysql_fetch_array($aq);
 				mysql_data_seek($aq, 0);
+				// No n00bs?
 				if(mysql_num_rows($aq) == 0 || $test['handle'] == NULL) {
-					$aq = $this->query('SELECT DISTINCT members.handle as handle, assignments.member as id FROM members JOIN assignments ON members.id = assignments.member ORDER BY assignments.sent_id ASC');
+					// Member least recently sent a question
+					$aq = $this->query('SELECT DISTINCT members.handle as handle, assignments.member as id FROM members JOIN assignments ON members.id = assignments.member ORDER BY assignments.sent_id DESC');
 				}
 			} else {
 				$members = $this->query('SELECT DISTINCT(members.handle), COUNT(topics.member) FROM members JOIN topics ON (topics.member = members.id AND (topics.topic = "'.implode('" OR topics.topic = "', $topics).'")) WHERE members.id NOT IN (SELECT member FROM questions)');
@@ -49,6 +52,14 @@
 			// TODO: Send member with most matches
 			$member = mysql_fetch_array($aq);
 			return $member;
+		}
+		
+		/**
+		 * Get question and assignment data by tweet_id
+		 */
+		public function getQuestionById($id) {
+			$qq = $this->query('SELECT questions.tweet_id AS question_id,questions.asker AS asker,assignments.member AS member FROM questions JOIN assignments ON assignments.question_id = questions.tweet_id WHERE assignments.sent_id = "'.$id.'"');
+			return mysql_fetch_array($qq);
 		}
 		
 		/**
@@ -77,6 +88,20 @@
 		 */
 		public function saveAssignment($tweet_id, $member_id, $sent_id) {
 			return $this->query('INSERT INTO assignments (question_id, member, sent_id) VALUES ("'.$tweet_id.'", '.$member_id.', "'.$sent_id.'")');
+		}
+		
+		/**
+		 * Save a question to the database to ensure members don't get overloaded
+		 * and that the reply can be sent
+		 *
+		 * @param integer $tweet_id  - Tweet ID of the question
+		 * @param integer $member_id - ID of the member question has been assigned to
+		 * @param string  $sent_id   - Tweet ID of the tweet sent to the member
+		 *
+		 * @return boolean of success
+		 */
+		public function saveAnswer($tweet_id, $member_id, $answer) {
+			return $this->query('INSERT INTO answers (tweet_id, member, answer) VALUES ("'.$tweet_id.'", '.$member_id.', "'.$answer.'")');
 		}
 		
 		/**
