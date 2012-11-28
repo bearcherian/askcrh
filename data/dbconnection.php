@@ -122,19 +122,16 @@
 		}
 		
 		/**
-		 * Save a member with his specialty topics if they're not already in the database
+		 * Save a member with his twitter ID and handle if they're not already in the database
 		 *
 		 * @param string $
 		 *
 		 * @return boolean of success
 		 */
-		public function addMember($handle, $topics = array()) {
-			$exists = $this->query('SELECT id FROM members WHERE handle="'.$handle.'"');
+		public function addMember($id, $handle) {
+			$exists = $this->query('SELECT * FROM members WHERE id="'.$id.'"');
 			if(mysql_num_rows($exists) > 0) return false;
-			$this->query('INSERT INTO members(handle) VALUES ("'.$handle.'")');
-			foreach($topics as $topic) {
-				$this->query('INSERT INTO members(handle) VALUES ("'.$handle.'")');
-			}
+			$this->query('INSERT INTO members(id, handle) VALUES ("'.$id.'", "'.$handle.'")');
 			return true;
 		}
 		
@@ -151,7 +148,7 @@
 			return $this->query('DELETE FROM members WHERE handle = "'.$handle.'"')
 				&& $this->query('DELETE FROM topics WHERE member = '.$id['id']);
 		}
-		
+
 		public function close() {
 			mysql_close($connect);
 		}
