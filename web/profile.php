@@ -8,6 +8,7 @@
 session_start();
 require_once('../library/abraham_twitter.php');
 require_once('config.php');
+require_once('../data/dbconnection.php');
 
 /* If access tokens are not available redirect to connect page. */
 if (empty($_SESSION['access_token']) || empty($_SESSION['access_token']['oauth_token']) || empty($_SESSION['access_token']['oauth_token_secret'])) {
@@ -30,5 +31,23 @@ $content = $connection->get('account/verify_credentials');
 //$connection->post('friendships/destroy', array('id' => 9436992));
 
 /* Include HTML to display on the page */
-echo var_dump($content); //include('html.inc');
+if (isset($content->id)) {
+	$db = new Database('localhost', 'gr8bear_askcrh', 'csc8542', 'gr8bear_askcrh');
+	$newMember = $db->addMember($content->id, $content->screen_name);
+}
+
+$status = "";
+
+if ($newMember) {
+	$status = $content->screen_name . " is now a member of CRH";
+}
+?>
+<div id="status"><?=$status?></div>
+<div id="profile">
+<h1>Profile for <?=$content->screen_name?></h1>
+</div>
+<?
+echo "<div id='accountdump' style='color:#cccccc'>For debugging only<br /><pre>";
+echo var_dump($content);
+echo "</pre></div>"; //include('html.inc');
 ?>
