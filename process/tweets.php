@@ -6,6 +6,7 @@
 	$database = new Database('localhost', 'gr8bear_askcrh', 'csc8542', 'gr8bear_askcrh');
 	// Get mentions
 	$mentions = $twitter->getMentions();
+	$factory = new MentionFactory();
 	echo 'Mentions: ' , count($mentions) , '<hr>';
 	foreach($mentions as $i=>$mention) {
 		echo $mention->id_str;
