@@ -49,6 +49,7 @@
 			// Pull last id from database
 			$lq = mysql_query('SELECT MAX(id) as max FROM (SELECT MAX(tweet_id) AS id FROM questions UNION SELECT MAX(tweet_id) AS id FROM answers) AS temp');
 			$latest = mysql_fetch_array($lq);
+			$latest['max'] = 27689656948131600; // testing
 			echo 'Last tweet: ', $latest['max'], '<br><br>';
 			// Get all mentions since last id
 			$mentions = $this->query('statuses/mentions',array('since_id'=>$latest['max'],'include_entities'=>true));

@@ -1,6 +1,7 @@
 <?php
 	require '/home/gr8bear/askcrh/data/dbconnection.php';
 	require 'twitterConnect.php';
+	require 'mentions_class.php';
 	// New connection
 	$twitter = new Twitter();
 	$database = new Database('localhost', 'gr8bear_askcrh', 'csc8542', 'gr8bear_askcrh');
@@ -9,6 +10,9 @@
 	$factory = new MentionFactory();
 	echo 'Mentions: ' , count($mentions) , '<hr>';
 	foreach($mentions as $i=>$mention) {
+		$mentionObject = $factory->create($mention);
+		echo get_class($mentionObject);
+		var_dump($mentionObject->getCommands());
 		echo $mention->id_str;
 		if(isset($mention->in_reply_to_status_id))
 			echo ' (<i>replyto:', $mention->in_reply_to_status_id_str, '</i>)';

@@ -66,9 +66,9 @@
 		 * Save a question to the database to ensure members don't get overloaded
 		 * and that the reply can be sent
 		 *
-		 * @param integer $tweet_id - Twitter ID of the mention
-		 * @param integer $asker    - Twitter handle of the asker
-		 * @param string  $question - Content of the tweeted question
+		 * @param string $tweet_id - Twitter ID of the mention
+		 * @param string $asker    - Twitter handle of the asker
+		 * @param string $question - Content of the tweeted question
 		 *
 		 * @return boolean of success
 		 */
