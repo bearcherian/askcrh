@@ -59,6 +59,9 @@
 		 */
 		public function getQuestionById($id) {
 			$qq = $this->query('SELECT questions.tweet_id AS question_id,questions.asker AS asker,assignments.member AS member FROM questions JOIN assignments ON assignments.question_id = questions.tweet_id WHERE assignments.sent_id = "'.$id.'"');
+			if(mysql_num_rows($qq) == 0) {
+				return false;
+			}
 			return mysql_fetch_array($qq);
 		}
 		

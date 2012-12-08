@@ -2,6 +2,7 @@
 	require '/home/gr8bear/askcrh/data/dbconnection.php';
 	require 'twitterConnect.php';
 	require 'mentions_class.php';
+	
 	// New connection
 	$twitter = new Twitter();
 	$database = new Database('localhost', 'gr8bear_askcrh', 'csc8542', 'gr8bear_askcrh');
@@ -9,44 +10,45 @@
 	$mentions = $twitter->getMentions();
 	$factory = new MentionFactory();
 	echo 'Mentions: ' , count($mentions) , '<hr>';
-	foreach($mentions as $i=>$mention) {
-		$mentionObject = $factory->create($mention);
-		echo get_class($mentionObject);
-		var_dump($mentionObject->getCommands());
-		echo $mention->id_str;
-		if(isset($mention->in_reply_to_status_id))
-			echo ' (<i>replyto:', $mention->in_reply_to_status_id_str, '</i>)';
-		echo '<br><br>&larr; ', $mention->text, ' (' . implode(', ', getHashTags($mention)) . ')<br>&larr; ', $mention->user->screen_name,'<br>';
-		// Get tweet message
-		list($askcrh, $tweet_text) = explode(' ', $mention->text, 2);
-		// TODO: CHECK FOR COMMANDS
-		// If this is a reply, it may be an answer
-		if($mention->in_reply_to_status_id == NULL) {
-			echo ' - new question - <br>';
-			// Save question to database
-      $database->saveQuestion($mention->id_str, $mention->user->screen_name, $tweet_text);
-      // TODO: DETERMINE ANSWERER
-			$member = $database->getMemberByTopic();
-			echo '&rarr; ', $member['handle'], ' (', $member['id'], ')<br>';
-			// Send tweet
-			$reply = $twitter->send('@crhallberg (' . $member['handle'] . ') ' . $tweet_text);
-			// Save assignment to database
-			if(isset($reply->id_str)) {
-				$database->saveAssignment($mention->id_str, $member['id'], $reply->id_str);
-			}		
-			// Send validating reply to mention's id (must include user name)
-			$reply = $twitter->send('Your question has been received and sent to a member! Expect an answer soon.', array('handle'=>$mention->user->screen_name, 'id'=>$mention->id_str));
-			// Save assignment
-			var_dump($reply);
+	// Foreach mention
+	foreach($mentions as $i=>$tweet) {
+		// Create an object from the factory
+		$mention = $factory->create($tweet);
+		// Check for commands
+		$commands = $mention->getCommands();
+		if(!empty($commands)) {
+			// Handle commands
+			var_dump($commands);
 		} else {
-			echo ' - answer - <br>';
-			// Check reply id against database
-			$question = $database->getQuestionById($mention->in_reply_to_status_id_str);
-			// Save answer
-      $database->saveAnswer($mention->id_str, $question['member'], $tweet_text);
-			// Send answer to asker
-			$answer = $twitter->send($tweet_text, array('handle'=>$question['asker'],'id'=>$question['question_id']));
-			var_dump($answer);
+			if(get_class($mention) == 'Answer') {
+				echo ' - answer - <br>';
+				// Check reply id against database
+				$question = $database->getQuestionById($mention->reply_to_id);
+				var_dump($question);
+				if($question == false) {
+					$mention = new Question($tweet);
+				} else {
+					// Save answer
+					$mention->save($database);
+					// Send answer to asker
+					$answer = $twitter->send($mention->text, array('handle'=>$question['asker'], 'id'=>$question['question_id']));
+				}
+			}
+			if(get_class($mention) == 'Question') {			// Answers
+				echo ' - new question - <br>';
+				$mention->save($database);
+				$mention->confirm($twitter);
+				// get member
+				$member = $database->getMemberByTopic($mention->hastags);
+				// deligate question as reply
+				$reply = $twitter->send(
+					'(' . $member['handle'] . ') ' . $mention->text,
+					array('id'=>$mention->id, 'handle'=>$mention->sender['handle'])
+				);
+				var_dump($reply);
+				// save deligation
+				$database->saveAssignment($mention->id, $member['id'], $reply->id_str);
+			}
 		}
 		echo '<hr>';
 	}
