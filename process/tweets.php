@@ -58,9 +58,13 @@
 				$question = $database->getQuestionById($mention->reply_to_id);
 				var_dump($question);
 				if($question == false) {
-					// TODO: Check for unanswered question in database
-					$mention = new Question($tweet);
-				} else {
+					// Match text message
+					$question = $database->pendingQuestions($mention->sender);
+					if($question == false) {
+						$mention = new Question($tweet);
+					}
+				}
+				if($question != false) {
 					// Save answer
 					$mention->save($database);
 					// Send answer to asker
@@ -75,8 +79,8 @@
 				$member = $database->getMemberByTopic($mention->hashtags);
 				// deligate question as reply
 				$reply = $twitter->send(
-					'(' . $member['handle'] . ') ' . $mention->text,
-					array('id'=>$mention->id, 'handle'=>$mention->sender->handle)
+					$mention->text,
+					array('id'=>$mention->id, 'handle'=>$member['handle'])
 				);
 				var_dump($reply);
 				// save deligation

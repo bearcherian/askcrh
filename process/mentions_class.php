@@ -2,6 +2,7 @@
 	class MentionFactory {
 		public function create($tweet) {
 			$base = new Mention($tweet);
+			var_dump($base);
 			if($base->getReplyId() || ($base->source == 'txt' && in_array('answer', $base->hashtags))) { 
 				return new Answer($tweet);
 			} else {
@@ -16,11 +17,13 @@
 		public function __construct($tweet) {
 			$this->id = $tweet->id_str;
 			$this->reply_to_id = $tweet->in_reply_to_status_id_str ?: false;
-			$this->source = $tweet->source;
 			$this->sender =(object) array(
 				'handle' => $tweet->user->screen_name,
 				'id' => $tweet->user->id_str
 			);
+			$posl = strpos($tweet->source, '>') ?: -1;
+			$posr = strrpos($tweet->source, '<') ?: strlen($tweet->source)+1;
+			$this->source = substr($tweet->source, $posl+1, $posr-$posl-1);
 			list(,$this->text) = explode(' ', $tweet->text, 2);
 			$this->hashtags = array();
 			foreach($tweet->entities->hashtags as $hashtag) {

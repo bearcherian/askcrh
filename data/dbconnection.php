@@ -21,7 +21,7 @@
 		 */
 		private function query($query) {
 			//echo $query, '<br>';
-			$query = mysql_query($query) or die($query.'<br>'.mysql_error());
+			$query = mysql_query($query);// or die($query.'<br>'.mysql_error());
 			return $query;
 		}
 		
@@ -35,6 +35,7 @@
 		 * @return string - member handle
 		 */
 		public function getMemberByTopic($topics = array()) {
+			return array('id'=>'14678195', 'handle'=>'crhallberg');
 			$aq = array();
 			if(true || empty($topics)) {
 				// Any n00bs?
@@ -58,6 +59,7 @@
 		 * Get question and assignment data by tweet_id
 		 */
 		public function getQuestionById($id) {
+			if($id == false || $id == NULL) return false;
 			$qq = $this->query('SELECT questions.tweet_id AS question_id,questions.asker AS asker,assignments.member AS member FROM questions JOIN assignments ON assignments.question_id = questions.tweet_id WHERE assignments.sent_id = "'.$id.'"');
 			if(mysql_num_rows($qq) == 0) {
 				return false;
@@ -116,6 +118,22 @@
 			$tq = $this->query('SELECT MAX(tweet_id) FROM questions');
 			$tweet = mysql_fetch_row($tq);
 			return $tweet['tweet_id'];
+		}
+		
+		/**
+		 * Return earliest unanswered question assigned to this member
+		 * 
+		 * This means reassignments need to be DELETED from the table
+		 *
+		 * @param object $member object
+		 *
+		 * @return mysql row object
+		 */
+		public function pendingQuestions($member) {
+			$pq = $this->query('SELECT MIN(questions.tweet_id) as question_id,questions.question as text,questions.asker as asker FROM questions JOIN assignments ON questions.tweet_id = assignments.question_id WHERE assignments.member = "'.$member->id.'" AND assignments.sent_id > (SELECT COALESCE(MAX(tweet_id), 0) FROM answers WHERE member = "'.$member->id.'")');
+			if(mysql_num_rows($pq) == 0) return false;
+			$questions = mysql_fetch_row($pq);
+			return $tweet;
 		}
 		
 		/**
