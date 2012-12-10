@@ -17,7 +17,7 @@
 			$this->id = $tweet->id_str;
 			$this->reply_to_id = $tweet->in_reply_to_status_id_str ?: false;
 			$this->source = $tweet->source;
-			$this->sender = array(
+			$this->sender =(object) array(
 				'handle' => $tweet->user->screen_name,
 				'id' => $tweet->user->id_str
 			);
@@ -45,20 +45,20 @@
 	
 	class Question extends Mention {		
 		public function save($db) {
-			$db->saveQuestion($this->id, $this->sender['handle'], $this->text);
+			$db->saveQuestion($this->id, $this->sender->handle, $this->text);
 		}
 		
 		public function confirm($twitter) {
 			return $twitter->send(
 				'Your question has been received and sent to a member! Expect an answer soon.',
-				array('handle'=>$this->sender['handle'], 'id'=>$this->id)
+				array('handle'=>$this->sender->handle, 'id'=>$this->id)
 			);
 		}
 	}
 
 	class Answer extends Mention {		
 		public function save($db) {
-			$db->saveAnswer($this->id, $this->sender['handle'], $this->text);
+			$db->saveAnswer($this->id, $this->sender->handle, $this->text);
 		}
 	}
 ?>

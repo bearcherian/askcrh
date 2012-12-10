@@ -145,10 +145,10 @@
 		 *
 		 * @return boolean of success
 		 */
-		public function removeMember($handle) {
-			$id = $this->query('SELECT id FROM members WHERE handle = "'.$handle.'"');
+		public function removeMember($id) {
+			$id = $this->query('SELECT id FROM members WHERE id = "'.$id.'"');
 			$id = mysql_fetch_array($id);
-			return $this->query('DELETE FROM members WHERE handle = "'.$handle.'"')
+			return $this->query('DELETE FROM members WHERE id = "'.$id.'"')
 				&& $this->query('DELETE FROM topics WHERE member = '.$id['id']);
 		}
 
