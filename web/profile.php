@@ -9,6 +9,11 @@ session_start();
 require_once('../library/abraham_twitter.php');
 require_once('config.php');
 require_once('../data/dbconnection.php');
+require_once('../data/Members.php');
+require_once('../data/Topics.php');
+
+$members = new Members();
+$topics = new Topics();
 
 /* If access tokens are not available redirect to connect page. */
 if (empty($_SESSION['access_token']) || empty($_SESSION['access_token']['oauth_token']) || empty($_SESSION['access_token']['oauth_token_secret'])) {
@@ -32,22 +37,66 @@ $content = $connection->get('account/verify_credentials');
 
 /* Include HTML to display on the page */
 if (isset($content->id)) {
-	$db = new Database('localhost', 'gr8bear_askcrh', 'csc8542', 'gr8bear_askcrh');
-	$newMember = $db->addMember($content->id, $content->screen_name);
+	$newMember = $members->addMember($content->id, $content->screen_name);
+	$id = $content->id;
+	$handle = $content->screen_name;
+	$ts = $topics->getTopicsForMember($id);
 }
 
 $status = "";
 
 if ($newMember) {
-	$status = $content->screen_name . " is now a member of CRH";
+	$status = $handle . " is now a member of CRH";
 }
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+function addTopic(strTopic) {
+	$.ajax({
+                type: "POST",
+                url: "addTopic.php",
+                data: "topic=" + strTopic + "&member=" + <?=$id?>,
+                timeout: 5000,
+                success: function() {
+                	document.location.reload(true);
+		},
+                error: function() {
+                        alert("Unable to add topics at this time");
+                }
+        });
+}
+
+$(document).ready(function() {
+	$('#topic_submit').click(function() {
+		addTopic($('input#topics').val());
+	});
+});
+</script>
+</head>
+<body>
 <div id="status"><?=$status?></div>
 <div id="profile">
-<h1>Profile for <?=$content->screen_name?></h1>
+<h1>Profile for <?=$handle?></h1>
+<h3>topics</h3>
+<ul>
+<?
+	if($ts == null) {
+		echo "No topics";
+	} else {
+		foreach ($ts as $t) {
+			echo "<li>" . $t . "</li>";
+		}
+	}
+?>
+<ul>
+Add Topics: <input type="text" name="topics" id="topics" /><input type="button" id="topic_submit" value="topic">
 </div>
 <?
-echo "<div id='accountdump' style='color:#cccccc'>For debugging only<br /><pre>";
+echo "<!-- info for debugging";
 echo var_dump($content);
-echo "</pre></div>"; //include('html.inc');
+echo "//-->"; //include('html.inc');
 ?>
+</body>
