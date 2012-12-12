@@ -17,6 +17,7 @@
 		// Check for commands
 		$commands = $mention->getCommands();
 		if(!empty($commands)) {
+			echo '<br>&larr; @', $mention->sender->handle, ' !', join(' !', $commands), '<br><br>';
 			// Handle commands
 			foreach($commands as $command) {
 				switch($command) {
@@ -68,8 +69,8 @@
 							'ASKCRH COMMANDS: !JOIN - become a member, !TOPICS - set member topics, !SKIP - skip question, !QUIT - leave the hub',
 							array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
 						);
-					$mention->save($database); // or get a text every 30 seconds, your choice
 				}
+				$mention->save($database); // or get a text every 30 seconds, your choice
 			}
 		} else {
 			if(get_class($mention) == 'Answer') {
