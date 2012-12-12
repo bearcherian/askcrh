@@ -11,9 +11,9 @@
 	$factory = new MentionFactory();
 	echo 'Mentions: ' , count($mentions) , '<hr>';
 	// Foreach mention
-	foreach($mentions as $i=>$tweet) {
+	for($i=count($mentions);$i-- > 0;) {
 		// Create an object from the factory
-		$mention = $factory->create($tweet);
+		$mention = $factory->create($mentions[$i]);
 		// Check for commands
 		$commands = $mention->getCommands();
 		if(!empty($commands)) {
@@ -25,6 +25,10 @@
 					case 'REGISTER':
 						// add member
 						$twitter->addMember($mention->sender->id, $mention->sender->handle);
+						$twitter->send(
+							'Welcome to the Hub! IMPORTANT: Please reply to answers with an #answer hashtag! KTHNXBYE! Send !HELP for more.',
+							array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
+						);
 						break;
 					case 'TOPIC':
 					case 'TOPICS':
@@ -36,6 +40,8 @@
 						break;
 					case 'SKIP':
 						// reassign question
+					case 'SPAM':
+						// delete old assignment
 						break;
 					case 'UNJOIN':
 					case 'QUIT':
@@ -56,7 +62,6 @@
 				echo ' - answer - <br>';
 				// Check reply id against database
 				$question = $database->getQuestionById($mention->reply_to_id);
-				var_dump($question);
 				if($question == false) {
 					// Match text message
 					$question = $database->pendingQuestions($mention->sender);
@@ -67,6 +72,7 @@
 				if($question != false) {
 					// Save answer
 					$mention->save($database);
+					echo 'SAVED!';
 					// Send answer to asker
 					$answer = $twitter->send($mention->text, array('handle'=>$question['asker'], 'id'=>$question['question_id']));
 				}
@@ -82,9 +88,13 @@
 					$mention->text,
 					array('id'=>$mention->id, 'handle'=>$member['handle'])
 				);
-				var_dump($reply);
 				// save deligation
-				$database->saveAssignment($mention->id, $member['id'], $reply->id_str);
+				//if(!isset($reply->id_str)) {
+					//$twitter->send('Sorry! There was an error! Please re-send your question.', array($mention->sender));
+					// delete assignment
+				//} else {
+					$database->saveAssignment($mention->id, $member['id'], $reply->id_str);
+				//}
 			}
 		}
 		echo '<hr>';

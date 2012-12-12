@@ -2,7 +2,6 @@
 	class MentionFactory {
 		public function create($tweet) {
 			$base = new Mention($tweet);
-			var_dump($base);
 			if($base->getReplyId() || ($base->source == 'txt' && in_array('answer', $base->hashtags))) { 
 				return new Answer($tweet);
 			} else {
@@ -61,7 +60,7 @@
 
 	class Answer extends Mention {		
 		public function save($db) {
-			$db->saveAnswer($this->id, $this->sender->handle, $this->text);
+			$db->saveAnswer($this->id, $this->sender->id, $this->text);
 		}
 	}
 ?>

@@ -132,8 +132,8 @@
 		public function pendingQuestions($member) {
 			$pq = $this->query('SELECT MIN(questions.tweet_id) as question_id,questions.question as text,questions.asker as asker FROM questions JOIN assignments ON questions.tweet_id = assignments.question_id WHERE assignments.member = "'.$member->id.'" AND assignments.sent_id > (SELECT COALESCE(MAX(tweet_id), 0) FROM answers WHERE member = "'.$member->id.'")');
 			if(mysql_num_rows($pq) == 0) return false;
-			$questions = mysql_fetch_row($pq);
-			return $tweet;
+			$questions = mysql_fetch_array($pq);
+			return $questions;
 		}
 		
 		/**
