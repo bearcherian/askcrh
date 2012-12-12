@@ -5,16 +5,23 @@ class Members {
 	private $members; //$members[id]
 
 	public function __construct() {
+				$this->loadMembers();
+		}
+
+	public function loadMembers() {
 		$this->members = array();
-		$results = mysql_query('SELECT * FROM members');
+		$results = mysql_query('SELECT m.id, m.handle, count(answers.member) as tAnswers FROM `members` m LEFT OUTER JOIN answers on m.id=member GROUP BY m.id ORDER BY tAnswers ASC');
 		$num = mysql_num_rows($results);
 	//	echo "Member results: " . $num;
 		for ( $i = 0; $i < $num; $i++) {
 			$id = mysql_result($results,$i,"id");
 			$handle = mysql_result($results, $i, "handle"); 
+			$answers = mysql_result($results, $i, "tAnswers");
 		//	echo $id . ":" . $handle . "<br />";
-			$this->members[$id] = $handle;
+			$this->members[$id]["handle"] = $handle;
+			$this->members[$id]["numAns"] = $answers;
 		}
+
 	}
 
 	public function getMembers() {
@@ -31,8 +38,8 @@ class Members {
 		
 		//Add this member to DB and to the members array
 		$amq = mysql_query('INSERT into members(id,handle) VALUES ("' . $id . '","' . $handle . '")');
-		$this->members[$id] = $handle;
-
+		$this->loadMembers();
+		return true;
 	}
 
 	public function getHandle($id) {
@@ -45,7 +52,14 @@ class Members {
 
 	public function removeMember($id) {
 		mysql_query('DELETE FROM members WHERE id = "' . $id . '"');
-		unset($this->members[$id]);
+		$this->loadMembers();
+		return true;
 	}
+
+	public function getLeastAnsweredMember() {
+		reset($this->members);
+		return key($this->members);
+	}
+
 }
 ?>
