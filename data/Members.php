@@ -6,26 +6,30 @@ class Members {
 	private $members; //$members[id]
 
 	public function __construct() {
-		$this->$db = new DBConnect();
-		$results = $this->$db->query('SELECT * FROM members');
+		$db = new DBConnect();
+		$db->connect();
+		$results = $db->query('SELECT * FROM members');
 		$num = mysql_num_rows($results);
-		for ( $i = 0; $i < $num; $num++) {
-			$this->$members[ mysql_result($results,$i,"id") ] = mysql_result($results, $i, "handle");
-		}
+		echo "Member results: " . $num;
+		for ( $i = 0; $i < $num; $i++) {
+			$id = mysql_result($results,$i,"id");
+			$handle = mysql_result($results, $i, "handle"); 
+			$members[$id] = $handle;		}
 	}
 
 	public function getMembers() {
-		return $this->$members;
+		return $members;
 	}
 
 	public function addMember($id, $handle) {
 		
 		//Check if this ID already exists
-		$mm = $this->$db->query('SELECT * from members where id = "' . $id '"');
+		$db->connect();
+		$mm = $db->query('SELECT * from members where id = "' . $id . '"');
 		if (mysql_num_rows($mm) > 0) return false;
 		
 		//Add this member to DB and to the members array
-		$amq = $this->$db->query('INSERT into members(id,handle) VALUES ("' . $id . '","' . $handle . '")');
+		$amq = $this->db->query('INSERT into members(id,handle) VALUES ("' . $id . '","' . $handle . '")');
 		$this->$members[$id] = $handle;
 
 	}

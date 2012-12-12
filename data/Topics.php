@@ -8,17 +8,18 @@ class Topics {
 	private $topics;
 
 	public function __construct(){
+		$db = new DBConnect();
 		$this->loadTopics();
 	}
 
 	private function loadTopics() {
-		$this->$topics = null;
-		$results = $this->$db->query('SELECT UNIQUE topic FROM topics');
+		$topics = null;
+		$results = $db->query('SELECT DISTINCT topic FROM topics');
 		$num = mysql_num_rows($results);
 		for ($i = 0; $i < $num; $i++) {
-			$this->$topics[$i] = mysql_result($results,$i,"topic");
+			$topics[$i] = mysql_result($results,$i,"topic");
 		}
-
+		echo "...topics loaded...";
 	}
 
 	public function getTopics() {
@@ -42,6 +43,16 @@ class Topics {
 		$this->$db->query('DELETE FROM topics WHERE member = "' . $member . '"');
 		$this->loadTopics();
 
+	}
+
+	public function getMembersForTopic($topic) {
+		$memberIds = null;
+		$results = $this->$db->query('SELECT DISTINCT member FROM topics WHERE topic = "' . $topic . '"');
+		$num = $mysql_num_rows($results);
+		for ($i = 0; $i < $num; $i++) {
+			$memberIds[$i] = mysql_result($results,$i,"member");
+		}
+		return $memberIds;
 	}
 }
 
