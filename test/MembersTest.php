@@ -22,5 +22,9 @@ echo "Members: <br /><pre>";
 print_r($members->getMembers());
 echo "</pre><br />";
 
+echo "Least answered...<br /><pre>";
+print_r($members->getLeastAnsweredMember());
+echo "</pre><br />";
+
 ?>
 
