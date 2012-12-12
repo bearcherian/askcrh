@@ -24,11 +24,17 @@
 					case 'SIGNUP':
 					case 'REGISTER':
 						// add member
-						$twitter->addMember($mention->sender->id, $mention->sender->handle);
-						$twitter->send(
-							'Welcome to the Hub! IMPORTANT: Please reply to answers with an #answer hashtag! KTHNXBYE! Send !HELP for more.',
-							array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
-						);
+						if($database->addMember($mention->sender->id, $mention->sender->handle)) {
+							$twitter->send(
+								'Welcome to the Hub! IMPORTANT: When texting, please reply to answers with an #answer hashtag! KTHNXBYE! Send !HELP for more.',
+								array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
+							);
+						} else {
+							$twitter->send(
+								"You're already a member, silly!",
+								array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
+							);
+						}
 						break;
 					case 'TOPIC':
 					case 'TOPICS':
@@ -62,9 +68,9 @@
 							'ASKCRH COMMANDS: !JOIN - become a member, !TOPICS - set member topics, !SKIP - skip question, !QUIT - leave the hub',
 							array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
 						);
+					$mention->save($database); // or get a text every 30 seconds, your choice
 				}
 			}
-			var_dump($commands);
 		} else {
 			if(get_class($mention) == 'Answer') {
 				echo ' - answer - <br>';
