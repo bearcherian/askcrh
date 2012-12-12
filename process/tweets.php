@@ -33,6 +33,10 @@
 					case 'TOPIC':
 					case 'TOPICS':
 						// update member topics
+						$twitter->send(
+							"Topics updated! You're so smart! ;)",
+							array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
+						);
 						break;
 					case 'DELETE':
 					case 'REMOVE':
@@ -47,6 +51,10 @@
 					case 'QUIT':
 						// remove member
 						$twitter->removeMember($mention->sender->id);
+						$twitter->send(
+							"Sorry to see you go! It's been fun!",
+							array('handle'=>$mention->sender->handle, 'id'=>$mention->id)
+						);
 						break;
 					default:
 						// Send help command
