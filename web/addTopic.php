@@ -5,7 +5,7 @@ $topics = new Topics();
 $tops = explode(",",$_POST['topic']);
 
 foreach ($tops as $t) {
-	$topics->addTopicMember($t,$_POST['member']);
+	$topics->addTopicMember(trim($t),$_POST['member']);
 }
 
 	
