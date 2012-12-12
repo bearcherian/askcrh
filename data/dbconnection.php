@@ -1,6 +1,11 @@
 <?php
+require_once('Members.php');
+require_once('Topics.php');
+
 	class Database {
 		private $connect;
+		private $members;
+		private $topics;
 		
 		/**
 		 * Constructor - connects to the database
@@ -8,6 +13,8 @@
 		public function __construct($host, $username, $password, $db) {
 			$connect = mysql_connect($host, $username, $password);
 			mysql_select_db($db);
+			$this->members = new Members();
+			$this->topics = new Topics();
 		}
 		
 		/**
@@ -35,7 +42,9 @@
 		 * @return string - member handle
 		 */
 		public function getMemberByTopic($topics = array()) {
-			return array('id'=>'14678195', 'handle'=>'crhallberg');
+			$default = $this->members->getLeastAnsweredMember();
+			$member = $default['handle'];
+			/*
 			$aq = array();
 			if(true || empty($topics)) {
 				// Any n00bs?
@@ -52,6 +61,8 @@
 			}
 			// TODO: Send member with most matches
 			$member = mysql_fetch_array($aq);
+			*/
+
 			return $member;
 		}
 		
@@ -150,10 +161,7 @@
 		 * @return boolean of success
 		 */
 		public function addMember($id, $handle) {
-			$exists = $this->query('SELECT * FROM members WHERE id="'.$id.'"');
-			if(mysql_num_rows($exists) > 0) return false;
-			$this->query('INSERT INTO members(id, handle) VALUES ("'.$id.'", "'.$handle.'")');
-			return true;
+			return $this->members->addMember($id, $handle);
 		}
 		
 		/**
@@ -164,10 +172,7 @@
 		 * @return boolean of success
 		 */
 		public function removeMember($id) {
-			$id = $this->query('SELECT id FROM members WHERE id = "'.$id.'"');
-			$id = mysql_fetch_array($id);
-			return $this->query('DELETE FROM members WHERE id = "'.$id.'"')
-				&& $this->query('DELETE FROM topics WHERE member = '.$id['id']);
+			return $this->members->removeMember($id);
 		}
 
 		public function close() {
